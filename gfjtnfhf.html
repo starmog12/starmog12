@@ -1,12 +1,331 @@
-- 👋 Hi, I’m @starmog12
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام هاكر الأسطوري | Matrix V3.0</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0F0;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+        }
+        
+        #terminal {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            margin: 5vh auto;
+            padding: 20px;
+            border: 2px solid #0F0;
+            border-radius: 5px;
+            box-shadow: 0 0 15px #0F0;
+            overflow-y: auto;
+            background-color: rgba(0, 20, 0, 0.2);
+            display: none; /* مخفي في البداية */
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: #0F0;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .command {
+            color: #0F0;
+            font-weight: bold;
+        }
+        
+        .response {
+            color: #7FFF7F;
+            margin-bottom: 15px;
+        }
+        
+        #input-line {
+            display: flex;
+            align-items: center;
+        }
+        
+        #user-input {
+            background: transparent;
+            border: none;
+            color: #0F0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            caret-color: #0F0;
+        }
+        
+        /* شاشة التحميل */
+        .login-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .login-text {
+            color: #0F0;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 300px;
+            height: 10px;
+            border: 1px solid #0F0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            width: 0;
+            background: #0F0;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div class="login-effect" id="login-screen">
+        <div class="login-text">جاري تشغيل نظام هاكر الأسطوري...</div>
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+        <div class="login-text" id="status-text">تهيئة النظام...</div>
+    </div>
 
-<!---
-starmog12/starmog12 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+    <!-- تأثير المصفوفة -->
+    <canvas id="matrix"></canvas>
+
+    <!-- الطرفية الرئيسية -->
+    <div id="terminal">
+        <div id="history"></div>
+        <div id="input-line">
+            <input type="text" id="user-input" autofocus>
+            <div class="cursor"></div>
+        </div>
+    </div>
+
+    <script>
+        // شاشة التحميل
+        const loginScreen = document.getElementById('login-screen');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        const terminal = document.getElementById('terminal');
+        
+        // محاكاة تحميل النظام
+        function simulateLogin() {
+            let progress = 0;
+            const messages = [
+                "جاري تحميل الوحدات الأساسية...",
+                "تفعيل أنظمة التشفير...",
+                "تهيئة واجهة المستخدم...",
+                "تحميل قاعدة البيانات...",
+                "التحقق من اتصال الشبكة...",
+                "جاهز للاتصال..."
+            ];
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 100) progress = 100;
+                progressBar.style.width = `${progress}%`;
+                
+                // تحديث رسالة الحالة بناء على التقدم
+                const messageIndex = Math.min(
+                    Math.floor(progress / (100 / messages.length)),
+                    messages.length - 1
+                );
+                statusText.textContent = messages[messageIndex];
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loginScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loginScreen.style.display = 'none';
+                            terminal.style.display = 'block';
+                            document.getElementById('user-input').focus();
+                            
+                            // عرض رسالة الترحيب
+                            const welcome = document.createElement('div');
+                            welcome.className = 'response';
+                            welcome.innerHTML = `
+                                <h2>نظام هاكر الأسطوري</h2>
+                                <p>الإصدار 3.0 | Matrix Core</p>
+                                <p>اكتب "مساعدة" لعرض الأوامر المتاحة</p>
+                            `;
+                            document.getElementById('history').appendChild(welcome);
+                        }, 500);
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // تأثير المصفوفة الخلفي
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = "01アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * -100;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        // نظام الأوامر
+        const input = document.getElementById('user-input');
+        const history = document.getElementById('history');
+        
+        const commands = {
+            'مساعدة': {
+                response: "الأوامر المتاحة:\n\n" +
+                         "مساعدة - عرض هذه القائمة\n" +
+                         "فحص - فحص النظام المستهدف\n" +
+                         "اختراق - بدء عملية الاختراق\n" +
+                         "تشفير - تشفير البيانات الحساسة\n" +
+                         "خروج - إنهاء الجلسة الحالية"
+            },
+            'فحص': {
+                response: "بدء فحص النظام المستهدف...\n\n" +
+                         "▣▣▣▣▣▣▣▣▣▣ 100%\n\n" +
+                         "تم اكتشاف الثغرات الأمنية:\n" +
+                         "- ثغرة SQL Injection\n" +
+                         "- ثغرة XSS\n" +
+                         "- كلمات مرور ضعيفة"
+            },
+            'اختراق': {
+                response: "تحذير: هذه العملية غير قانونية!\n\n" +
+                         "جاري بدء عملية الاختراق...\n" +
+                         "████████████████████ 100%\n\n" +
+                         "تم اختراق النظام بنجاح!"
+            },
+            'تشفير': {
+                response: "تهيئة خوارزمية التشفير...\n" +
+                         "جاري تشفير البيانات...\n\n" +
+                         "████████████████████ 100%\n\n" +
+                         "تم تشفير جميع البيانات بنجاح!"
+            },
+            'خروج': {
+                response: "جاري إنهاء جميع العمليات...\n" +
+                         "حذف السجلات...\n" +
+                         "قطع الاتصال...\n\n" +
+                         "تم الخروج من النظام بأمان",
+                action: () => {
+                    setTimeout(() => {
+                        alert("تم إنهاء الجلسة بنجاح!");
+                        location.reload();
+                    }, 1000);
+                }
+            }
+        };
+        
+        // معالجة الأوامر
+        function processCommand(cmd) {
+            const commandLine = document.createElement('div');
+            commandLine.className = 'command';
+            commandLine.innerHTML = `> ${cmd}`;
+            history.appendChild(commandLine);
+            
+            const response = document.createElement('div');
+            response.className = 'response';
+            history.appendChild(response);
+            
+            const command = commands[cmd] || {
+                response: `خطأ: الأمر "${cmd}" غير معروف\nاكتب "مساعدة" لعرض الأوامر المتاحة`
+            };
+            
+            response.textContent = command.response;
+            
+            if (command.action) {
+                command.action();
+            }
+            
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // التعامل مع ضغطات المفاتيح
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim();
+                if (cmd) {
+                    processCommand(cmd);
+                    input.value = '';
+                }
+            }
+        });
+        
+        // بدء النظام
+        window.onload = function() {
+            // بدء تأثير المصفوفة
+            setInterval(drawMatrix, 50);
+            
+            // بدء تحميل النظام
+            simulateLogin();
+        };
+        
+        // تعديل حجم canvas عند تغيير حجم النافذة
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
